@@ -1,0 +1,9 @@
+[Unit]
+Description=Please run my btc stat job
+
+[Service]
+Type=simple
+ExecStart=/home/mm/bin/btc-stats.sh
+
+[Install]
+WantedBy=default.target
