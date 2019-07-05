@@ -1,0 +1,73 @@
+---
+title: "Prognose FT19"
+author: "Martin M. S. Pedersen"
+date: "July 5, 2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Data er fra https://da.wikipedia.org/wiki/Folketingsvalget_2019
+
+Locale sættes til dansk, så R kan sortere danske tegn korrekt.
+```{r results='hide'}
+Sys.setlocale("LC_ALL", "da_DK.UTF-8")
+```
+
+Selve dataerne fra folketingsvalget
+```{r}
+
+bogstav   <- c("A", "B", "C", "D", "E", "F", "I", "K", "O", "P", "V", "Ø", "Å")
+navn      <- c("Socialdemokratiet",
+                "Radikale Venstre",
+                "Det Konservative Folkeparti",
+                "Nye Borgelige",
+                "Klaus Riskær Pedersen",
+                "Socialistisk Folkeparti",
+                "Liberal Alliance",
+                "Kristendemokraterne",
+                "Dansk Folkeparti",
+                "Stram Kurs",
+                "Venstre",
+                "Enhedslisten",
+                "Alternativet")
+pct <- c(25.9, 8.6, 6.6, 2.4, 0.8, 7.7, 2.3, 1.7, 8.7, 1.8, 23.4, 6.9, 3)
+mandater <- c(48, 16, 12, 4, 0, 14, 4, 0, 16, 0, 43, 13, 5)
+blok <- c("Rød", "Rød", "Blå", "Blå", "Blå", "Rød", "Blå", "Blå", "Blå",
+          "Blå", "Blå", "Rød", "Rød")
+```
+
+Test om mandat-antallet er korrekt angivet ellers stop programmet.
+```{r}
+stopifnot(sum(mandater) == 175)
+```
+
+Og dan selve data-framen ft19 ved at sætte de fire vektorer sammen og navngivn rækker.
+```{r}
+ft19 <- data.frame(bogstav, pct, blok, mandater)
+rownames(ft19) <- navn
+```
+
+\newpage
+Og nu kan laves en prognose baseret på 600 personer:
+```{r}
+hvor_mange <- 600
+meningsmåling <- sample(bogstav, hvor_mange, replace = TRUE, prob = pct)
+meningsmåling <- factor(meningsmåling, levels = bogstav)
+ft19$meningsmåling <- round(table(meningsmåling) / hvor_mange * 100, 1)
+ft19$måling_mandater <- round(ft19$meningsmåling * 1.75)
+
+ft19[ft19$måling_mandater < 4,]$måling_mandater <- 0
+ft19[,c("mandater","måling_mandater")]
+```
+
+Hvor stor af afvigelsen, når man ser på en hel blok og ikke kun de enkelte partier?
+```{r}
+sum(ft19[ft19$blok == "Rød",]$pct)
+sum(ft19[ft19$blok == "Rød",]$meningsmåling)
+```
+
+
