@@ -17,6 +17,11 @@ Locale sættes til dansk, så R kan sortere danske tegn korrekt.
 Sys.setlocale("LC_ALL", "da_DK.UTF-8")
 ```
 
+Sætter seed for tilfældighedsgeneratoren.
+```{r}
+set.seed(2)
+```
+
 Selve dataerne fra folketingsvalget
 ```{r}
 
@@ -45,7 +50,7 @@ Test om mandat-antallet er korrekt angivet ellers stop programmet.
 stopifnot(sum(mandater) == 175)
 ```
 
-Og dan selve data-framen ft19 ved at sætte de fire vektorer sammen og navngivn rækker.
+Og dan nu selve data-framen ft19 ved at sætte de fire vektorer sammen og navngivn rækker.
 ```{r}
 ft19 <- data.frame(bogstav, pct, blok, mandater)
 rownames(ft19) <- navn
@@ -54,20 +59,26 @@ rownames(ft19) <- navn
 \newpage
 Og nu kan laves en prognose baseret på 600 personer:
 ```{r}
-hvor_mange <- 600
+hvor_mange <- 1200
 meningsmåling <- sample(bogstav, hvor_mange, replace = TRUE, prob = pct)
 meningsmåling <- factor(meningsmåling, levels = bogstav)
-ft19$meningsmåling <- round(table(meningsmåling) / hvor_mange * 100, 1)
-ft19$måling_mandater <- round(ft19$meningsmåling * 1.75)
-
-ft19[ft19$måling_mandater < 4,]$måling_mandater <- 0
-ft19[,c("mandater","måling_mandater")]
+ft19$prognose_pct <- round(table(meningsmåling) / hvor_mange * 100, 1)
+ft19$prognose_mandater <- round(ft19$prognose_pct * 1.75)
 ```
+
+Hvis et parti har fået under 4 mandater i prognosen sættes de til 0.
+```{r}
+ft19[ft19$prognose_mandater < 4,]$prognose_mandater <- 0
+```
+
+Tilsidst vises data sorteret efter pct.
+```{r}
+ft19[order(-pct), c("mandater", "prognose_mandater")]
+```
+
 
 Hvor stor af afvigelsen, når man ser på en hel blok og ikke kun de enkelte partier?
 ```{r}
-sum(ft19[ft19$blok == "Rød",]$pct)
-sum(ft19[ft19$blok == "Rød",]$meningsmåling)
+cat("Rød-blok (valg):\t\t", sum(ft19[ft19$blok == "Rød",]$pct), 
+    "\nRød-blok (prognose):\t", sum(ft19[ft19$blok == "Rød",]$prognose_pct), "\n")
 ```
-
-
