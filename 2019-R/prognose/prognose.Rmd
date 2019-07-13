@@ -22,7 +22,7 @@ Sætter seed for tilfældighedsgeneratoren.
 set.seed(2)
 ```
 
-Selve dataerne fra folketingsvalget
+Selve dataerne fra folketingssvalget 2019
 ```{r}
 
 bogstav   <- c("A", "B", "C", "D", "E", "F", "I", "K", "O", "P", "V", "Ø", "Å")
