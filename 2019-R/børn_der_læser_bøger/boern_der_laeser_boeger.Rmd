@@ -1,0 +1,74 @@
+---
+title: "Børn, der læser bøger"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+classoption: landscape
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Først er par biblioteker indlæses
+```{r message=FALSE, warning=FALSE}
+library(ggplot2)
+library(reshape2)
+library(RColorBrewer)
+library(ggthemes)
+```
+
+Filen er med en header og er felterne er afskilt med tabs. Derfor bruges read.delim  til at indlæse filen med.
+```{r}
+df <-  read.delim("boern_der_laeser_boeger.txt")
+df 
+```
+
+Filen er i "wide format". Det er ganske normalt, men "long format" er nemmere at arbejde med. melt() fra reshape2-pakken konvertere til "long format" og de nye søjler får fornuftige navne.
+```{r}
+df <- melt(df) 
+names(df)[2] <- "hyppighed"
+names(df)[3] <- "år"
+names(df)[4] <- "pct"
+head(df)
+```
+
+Og så skal der fjernes X fra år-søjlen samt år/alder-søjlerne kategoriseres med factor().
+```{r}
+df$år <- sub("X","",df$år)
+df$alder <- factor(df$alder, levels = c("7 år","12 år","15 år"))
+df$år <- factor(df$år)
+```
+
+Det er også nødvendigt at lave søjlen med hyppigheder om til en kategori. Så kommer det i rigtig rækkefølge i grafikken.
+```{r}
+df$hyppighed <- factor(df$hyppighed, levels = c(
+  "Mindst en gang om ugen",
+  "Mindst en gang om måneden",
+  "Sjældnere end en gang om måneden",
+  "Aldrig"))
+head(df)
+```
+
+Strukturen af den endelige data-frame kan ses med str()
+```{r}
+str(df)
+```
+
+\newpage
+Og til allersidst grafikken. 
+```{r warning=FALSE,fig.width=10}
+g <- ggplot(df, aes(alder, pct, fill = hyppighed)) 
+g <- g + geom_col(position = "fill")  
+g <- g + facet_wrap(~år, scales = "free_x")
+g <- g + scale_y_continuous(labels = scales::percent)
+g <- g + labs(x = "Alder", caption = "Kilde: Danmarks Statistik", title = "Hvor ofte læser børn bøger?")
+g <- g + scale_fill_brewer(type = "seq")
+g <- g + theme_hc()
+g <- g + coord_flip() 
+g
+```
+
+
+
